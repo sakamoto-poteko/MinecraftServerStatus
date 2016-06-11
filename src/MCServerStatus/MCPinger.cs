@@ -11,22 +11,17 @@ namespace MCServerStatus
 {
     public class MCPinger
     {
-        private Socket socket { get; set; }
+        private TcpClient tcpclient { get; set; }
         private string address { get; set; }
         private short port { get; set; }
 
-        public MCPinger(string addr, short port)
+        public MCPinger(string address, short port)
         {
-            socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
-            this.address = addr;
+            tcpclient = new TcpClient();
+            this.address = address;
             this.port = port;
         }
-
-        private void ConnectToServer()
-        {
-            socket.Connect(address, port);
-        }
-
+        
         public int ReadVarInt(byte[] input)
         {
             int count;
@@ -90,17 +85,18 @@ namespace MCServerStatus
             }
         }
 
-        public Status Ping(string addr, short port)
+        public async Task<Status> Ping()
         {
-            if (socket.Connected == false)
+            if (!tcpclient.Connected)
             {
-                ConnectToServer();
+                await tcpclient.ConnectAsync(address, port);
+
+                if (!tcpclient.Connected)
+                    return null;
             }
 
-            if (!socket.Connected == false)
-                return null;
-            
-            NetworkStream ns = new NetworkStream(socket);
+
+            NetworkStream ns = tcpclient.GetStream();
 
             BinaryWriter writer = new BinaryWriter(ns);
             BinaryReader reader = new BinaryReader(ns);
@@ -110,8 +106,8 @@ namespace MCServerStatus
             handshakewriter.Write((byte)0x00);
             handshakewriter.Write(WriteVarInt(4));
 
-            handshakewriter.Write(WriteVarInt(addr.Length));
-            handshakewriter.Write(Encoding.UTF8.GetBytes(addr));
+            handshakewriter.Write(WriteVarInt(address.Length));
+            handshakewriter.Write(Encoding.UTF8.GetBytes(address));
             handshakewriter.Write((short)25565);
             handshakewriter.Write(WriteVarInt(0x01));
             handshakewriter.Flush();

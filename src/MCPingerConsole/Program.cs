@@ -10,8 +10,16 @@ namespace MCPingerConsole
     {
         public static void Main(string[] args)
         {
-            MCPinger pinger = new MCPinger();
-            var status = pinger.Ping("mc.afa.moe", 25565);
+            MCPinger pinger = new MCPinger("mc.afa.moe", 25565);
+
+            Task.Run(async () =>
+            {
+                var status = await pinger.Ping();
+
+                int a = 0;
+            }).Wait();
+
+
         }
     }
 }
