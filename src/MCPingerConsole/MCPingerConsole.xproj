@@ -7,8 +7,8 @@
 
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>4c42d89b-6e54-4c9c-9c7d-b59a6d0f919c</ProjectGuid>
-    <RootNamespace>MCPinger</RootNamespace>
+    <ProjectGuid>8a609971-b2eb-49e4-a1aa-ceab761c3517</ProjectGuid>
+    <RootNamespace>MCPingerConsole</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
