@@ -8,6 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{279EFDE2-F473-4D7B-A535-3F460984AD1E}"
 	ProjectSection(SolutionItems) = preProject
 		global.json = global.json
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MCPingerConsole", "src\MCPingerConsole\MCPingerConsole.xproj", "{8A609971-B2EB-49E4-A1AA-CEAB761C3517}"
