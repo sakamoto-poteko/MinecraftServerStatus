@@ -8,7 +8,7 @@ namespace MCServerStatus
 {
     public class Status
     {
-        public class _Description
+        public class _Chat
         {
             public string Text { get; set; }
         }
@@ -34,7 +34,7 @@ namespace MCServerStatus
 
         }
 
-        public _Description Description { get; set; }
+        public _Chat Description { get; set; }
 
         public _Version Version { get; set; }
 

@@ -12,11 +12,17 @@ namespace MCPingerConsole
         {
             MCPinger pinger = new MCPinger("mc.afa.moe", 25565);
 
+
             Task.Run(async () =>
             {
-                var status = await pinger.Ping();
+                while (true)
+                {
+                    var status = await pinger.Request();
 
-                int a = 0;
+                    Console.WriteLine(status.Players.Online.ToString() + " people online");
+
+                    Task.Delay(1000).Wait();
+                }
             }).Wait();
 
 

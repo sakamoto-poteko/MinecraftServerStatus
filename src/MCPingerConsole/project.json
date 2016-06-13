@@ -5,17 +5,21 @@
   },
 
   "dependencies": {
-    "MCPinger": "1.0.0-*",
-    "MCServerStatus": "1.0.0-*",
-    "Microsoft.NETCore.App": {
-        "type": "platform",
-        "version": "1.0.0-rc2-3002702"
-    }
+    "MCServerStatus": "1.0.1-*"
   },
 
   "frameworks": {
     "netcoreapp1.0": {
-      "imports": "dnxcore50"
+        "imports": "dnxcore50",
+        "dependencies": {
+            "Microsoft.NETCore.App": {
+                "type": "platform",
+                "version": "1.0.0-rc2-3002702"
+            }
+        }
+    },
+
+    "net46": {
     }
   }
 }

@@ -11,24 +11,22 @@ namespace MCServerStatus
 {
     public class MCPinger
     {
-        private TcpClient tcpclient { get; set; }
         private string address { get; set; }
         private short port { get; set; }
 
         public MCPinger(string address, short port)
         {
-            tcpclient = new TcpClient();
             this.address = address;
             this.port = port;
         }
-        
-        public int ReadVarInt(byte[] input)
+
+        private int ReadVarInt(byte[] input)
         {
             int count;
             return ReadVarInt(input, out count);
         }
 
-        public int ReadVarInt(BinaryReader reader)
+        private int ReadVarInt(BinaryReader reader)
         {
             var s = reader;
             int i = 0;
@@ -46,7 +44,7 @@ namespace MCServerStatus
             return i;
         }
 
-        public int ReadVarInt(byte[] input, out int count)
+        private int ReadVarInt(byte[] input, out int count)
         {
             var s = input.ToList();
             int i = 0;
@@ -69,7 +67,7 @@ namespace MCServerStatus
             return i;
         }
 
-        public byte[] WriteVarInt(int paramInt)
+        private byte[] GetVarInt(int paramInt)
         {
             List<byte> output = new List<byte>();
             while (true)
@@ -85,63 +83,80 @@ namespace MCServerStatus
             }
         }
 
-        public async Task<Status> Ping()
+        private byte[] GetString(string content)
         {
-            if (!tcpclient.Connected)
+            List<byte> output = new List<byte>();
+
+            output.AddRange(GetVarInt(content.Length));
+            output.AddRange(Encoding.UTF8.GetBytes(content));
+
+            return output.ToArray();
+        }
+
+        private void Handshake(TcpClient tcpclient)
+        {
+            MemoryStream handshakeStream = new MemoryStream();
+            BinaryWriter handshakewriter = new BinaryWriter(handshakeStream);
+
+            handshakewriter.Write((byte)0x00);  // Packet ID
+            handshakewriter.Write(GetVarInt(4));  // Protocol version, 4 for 1.7.1-pre to 1.7.5
+            handshakewriter.Write(GetString(address));  // hostname or IP
+            handshakewriter.Write(port); // Port
+            handshakewriter.Write(GetVarInt(0x01)); // Next state, 1 for `status'
+            handshakewriter.Flush();
+
+            ArraySegment<byte> handshakeStreamBuffer;
+            handshakeStream.TryGetBuffer(out handshakeStreamBuffer);
+
+            NetworkStream ns = tcpclient.GetStream();
+            BinaryWriter writer = new BinaryWriter(ns);
+
+            writer.Write(GetVarInt((int)handshakeStream.Length));
+            writer.Write(handshakeStreamBuffer.ToArray(), 0, (int)handshakeStream.Length);
+            writer.Flush();
+        }
+
+        public async Task<Status> Request()
+        {
+            using (var tcpclient = new TcpClient())
             {
                 await tcpclient.ConnectAsync(address, port);
 
                 if (!tcpclient.Connected)
                     return null;
+
+                Handshake(tcpclient);
+
+                NetworkStream ns = tcpclient.GetStream();
+
+                BinaryWriter writer = new BinaryWriter(ns);
+                BinaryReader reader = new BinaryReader(ns);
+
+                writer.Write((short)0x0001);   // BE: 0x0100, Length and 
+                                               //writer.Write((byte)0x00);   // ID for `Request'
+                writer.Flush();
+
+                var packetLen = ReadVarInt(reader);
+                var packetId = ReadVarInt(reader);
+                var packetJsonLen = ReadVarInt(reader);
+
+                var response = reader.ReadBytes(packetJsonLen);
+
+                var json = Encoding.UTF8.GetString(response);
+
+                try
+                {
+                    var jsonobj = JsonConvert.DeserializeObject<Status>(json);
+                    return jsonobj;
+                }
+                catch (Exception)
+                {
+                    return null;
+                }
             }
 
-
-            NetworkStream ns = tcpclient.GetStream();
-
-            BinaryWriter writer = new BinaryWriter(ns);
-            BinaryReader reader = new BinaryReader(ns);
-
-            MemoryStream handshakeStream = new MemoryStream();
-            BinaryWriter handshakewriter = new BinaryWriter(handshakeStream);
-            handshakewriter.Write((byte)0x00);
-            handshakewriter.Write(WriteVarInt(4));
-
-            handshakewriter.Write(WriteVarInt(address.Length));
-            handshakewriter.Write(Encoding.UTF8.GetBytes(address));
-            handshakewriter.Write((short)25565);
-            handshakewriter.Write(WriteVarInt(0x01));
-            handshakewriter.Flush();
-            ArraySegment<byte> bas;
-            var gotBuffer = handshakeStream.TryGetBuffer(out bas);
-            if (!gotBuffer)
-                return null;
-            var handshake = bas.ToArray();
-            writer.Write(WriteVarInt((int)handshakeStream.Length));
-            writer.Write(handshake, 0, (int)handshakeStream.Length);
-            writer.Flush();
-
-            writer.Write((byte)0x01);
-            writer.Write((byte)0x00);
-            writer.Flush();
-
-            var packetLen = ReadVarInt(reader);
-            var packetId = ReadVarInt(reader);
-            var packetJsonLen = ReadVarInt(reader);
-
-            var response = reader.ReadBytes(packetJsonLen);
-
-            var json = Encoding.UTF8.GetString(response);
-
-            try
-            {
-                var jsonobj = JsonConvert.DeserializeObject<Status>(json);
-                return jsonobj;
-            }
-            catch (Exception)
-            {
-                return null;
-            }
         }
+
 
     }
 }
