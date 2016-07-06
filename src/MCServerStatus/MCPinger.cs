@@ -9,7 +9,13 @@ using Newtonsoft.Json;
 
 namespace MCServerStatus
 {
-    public class MCPinger
+    public interface IMCPinger
+    {
+        Task<Status> Ping();
+        Task<Status> Request();
+    }
+
+    public class MCPinger : IMCPinger
     {
         private string address { get; set; }
         private short port { get; set; }
@@ -157,6 +163,9 @@ namespace MCServerStatus
 
         }
 
-
+        public Task<Status> Ping()
+        {
+            return Request();
+        }
     }
 }
