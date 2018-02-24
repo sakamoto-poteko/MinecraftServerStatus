@@ -10,16 +10,15 @@ namespace MCPingerConsole
     {
         public static void Main(string[] args)
         {
-            MCPinger pinger = new MCPinger("mc.afa.moe", 25565);
-
+            IMinecraftPinger pinger = new MinecraftPinger("play.minesuperior.com", 25565);
 
             Task.Run(async () =>
             {
                 while (true)
                 {
-                    var status = await pinger.Request();
+                    var status = await pinger.RequestAsync();
 
-                    Console.WriteLine(status.Players.Online.ToString() + " people online");
+                    Console.WriteLine(status.Players.Online + " people online");
 
                     Task.Delay(1000).Wait();
                 }

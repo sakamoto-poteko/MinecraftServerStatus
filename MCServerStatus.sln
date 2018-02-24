@@ -1,19 +1,18 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{CE225410-8D27-47ED-A32B-805E8C4EA3C3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{279EFDE2-F473-4D7B-A535-3F460984AD1E}"
 	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MCPingerConsole", "src\MCPingerConsole\MCPingerConsole.xproj", "{8A609971-B2EB-49E4-A1AA-CEAB761C3517}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MCPingerConsole", "src\MCPingerConsole\MCPingerConsole.csproj", "{8A609971-B2EB-49E4-A1AA-CEAB761C3517}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MCServerStatus", "src\MCServerStatus\MCServerStatus.xproj", "{4C42D89B-6E54-4C9C-9C7D-B59A6D0F919C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MCServerStatus", "src\MCServerStatus\MCServerStatus.csproj", "{4C42D89B-6E54-4C9C-9C7D-B59A6D0F919C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,5 +31,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {262452E6-CAEF-4B1E-969A-454CC6E4F0C6}
 	EndGlobalSection
 EndGlobal

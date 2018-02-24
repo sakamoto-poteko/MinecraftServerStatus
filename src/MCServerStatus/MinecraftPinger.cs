@@ -5,34 +5,28 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using MCServerStatus.Models;
 using Newtonsoft.Json;
 
 namespace MCServerStatus
 {
-    public interface IMCPinger
+    public class MinecraftPinger : IMinecraftPinger
     {
-        Task<Status> Ping();
-        Task<Status> Request();
-    }
+        private string Address { get; }
+        private short Port { get; }
 
-    public class MCPinger : IMCPinger
-    {
-        private string address { get; set; }
-        private short port { get; set; }
-
-        public MCPinger(string address, short port)
+        public MinecraftPinger(string address, short port)
         {
-            this.address = address;
-            this.port = port;
+            Address = address;
+            Port = port;
         }
 
-        private int ReadVarInt(byte[] input)
+        private static int ReadVarInt(IEnumerable<byte> input)
         {
-            int count;
-            return ReadVarInt(input, out count);
+            return ReadVarInt(input, out var count);
         }
 
-        private int ReadVarInt(BinaryReader reader)
+        private static int ReadVarInt(BinaryReader reader)
         {
             var s = reader;
             int i = 0;
@@ -50,7 +44,7 @@ namespace MCServerStatus
             return i;
         }
 
-        private int ReadVarInt(byte[] input, out int count)
+        private static int ReadVarInt(IEnumerable<byte> input, out int count)
         {
             var s = input.ToList();
             int i = 0;
@@ -73,9 +67,9 @@ namespace MCServerStatus
             return i;
         }
 
-        private byte[] GetVarInt(int paramInt)
+        private static byte[] GetVarInt(int paramInt)
         {
-            List<byte> output = new List<byte>();
+            var output = new List<byte>();
             while (true)
             {
                 if ((paramInt & 0xFFFFFF80) == 0)
@@ -89,9 +83,9 @@ namespace MCServerStatus
             }
         }
 
-        private byte[] GetString(string content)
+        private static byte[] GetString(string content)
         {
-            List<byte> output = new List<byte>();
+            var output = new List<byte>();
 
             output.AddRange(GetVarInt(content.Length));
             output.AddRange(Encoding.UTF8.GetBytes(content));
@@ -101,42 +95,41 @@ namespace MCServerStatus
 
         private void Handshake(TcpClient tcpclient)
         {
-            MemoryStream handshakeStream = new MemoryStream();
-            BinaryWriter handshakewriter = new BinaryWriter(handshakeStream);
+            var handshakeStream = new MemoryStream();
+            var handshakewriter = new BinaryWriter(handshakeStream);
 
             handshakewriter.Write((byte)0x00);  // Packet ID
             handshakewriter.Write(GetVarInt(4));  // Protocol version, 4 for 1.7.1-pre to 1.7.5
-            handshakewriter.Write(GetString(address));  // hostname or IP
-            handshakewriter.Write(port); // Port
+            handshakewriter.Write(GetString(Address));  // hostname or IP
+            handshakewriter.Write(Port); // Port
             handshakewriter.Write(GetVarInt(0x01)); // Next state, 1 for `status'
             handshakewriter.Flush();
 
-            ArraySegment<byte> handshakeStreamBuffer;
-            handshakeStream.TryGetBuffer(out handshakeStreamBuffer);
+            handshakeStream.TryGetBuffer(out var handshakeStreamBuffer);
 
-            NetworkStream ns = tcpclient.GetStream();
-            BinaryWriter writer = new BinaryWriter(ns);
+            var ns = tcpclient.GetStream();
+            var writer = new BinaryWriter(ns);
 
             writer.Write(GetVarInt((int)handshakeStream.Length));
             writer.Write(handshakeStreamBuffer.ToArray(), 0, (int)handshakeStream.Length);
             writer.Flush();
         }
 
-        public async Task<Status> Request()
+        public async Task<Status> RequestAsync()
         {
             using (var tcpclient = new TcpClient())
             {
-                await tcpclient.ConnectAsync(address, port);
+                await tcpclient.ConnectAsync(Address, Port);
 
                 if (!tcpclient.Connected)
                     return null;
 
                 Handshake(tcpclient);
 
-                NetworkStream ns = tcpclient.GetStream();
+                var ns = tcpclient.GetStream();
 
-                BinaryWriter writer = new BinaryWriter(ns);
-                BinaryReader reader = new BinaryReader(ns);
+                var writer = new BinaryWriter(ns);
+                var reader = new BinaryReader(ns);
 
                 writer.Write((short)0x0001);   // BE: 0x0100, Length and 
                                                //writer.Write((byte)0x00);   // ID for `Request'
@@ -163,9 +156,9 @@ namespace MCServerStatus
 
         }
 
-        public Task<Status> Ping()
+        public Task<Status> PingAsync()
         {
-            return Request();
+            return RequestAsync();
         }
     }
 }
