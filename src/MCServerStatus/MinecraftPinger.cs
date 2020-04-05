@@ -13,9 +13,9 @@ namespace MCServerStatus
     public class MinecraftPinger : IMinecraftPinger
     {
         private string Address { get; }
-        private short Port { get; }
+        private ushort Port { get; }
 
-        public MinecraftPinger(string address, short port)
+        public MinecraftPinger(string address, ushort port)
         {
             Address = address;
             Port = port;
